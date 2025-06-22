@@ -4,3 +4,5 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+api_login_jwt:
+    path: /api/v1/login_jwt
