@@ -12,6 +12,7 @@ use App\Domain\Task\Enum\TaskStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Domain\User\Entity\User;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Index(columns: ['priority'])]
@@ -23,24 +24,31 @@ class Task
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['task:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['task:list'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['task:list'])]
     private ?string $description = null;
 
     #[ORM\Column(enumType: TaskStatus::class)]
+    #[Groups(['task:list'])]
     private ?TaskStatus $status = null;
 
     #[ORM\Column(enumType: TaskPriority::class)]
+    #[Groups(['task:list'])]
     private ?TaskPriority $priority = null;
 
     #[ORM\Column]
+    #[Groups(['task:list'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['task:list'])]
     private ?\DateTimeImmutable $completedAt = null;
 
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'subtasks')]
