@@ -14,11 +14,12 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use App\Domain\User\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Api\V1\RequestHandler\GetTasksHandler;
+use App\Api\V1\RequestHandler\GetTaskListHandler;
 use App\Api\V1\RequestPayload\TaskListGet;
+use App\Api\V1\RequestHandler\GetTaskHandler;
 
 
-#[Route('/tasks', name: 'tasks_')]
+#[Route('/task', name: 'task_')]
 final class TaskController extends AbstractController
 {
     public function __construct(
@@ -27,38 +28,67 @@ final class TaskController extends AbstractController
     {}
 
     #[Route('/list', name: 'list', methods: ['GET'])]
-    public function listTasks(
+    public function getTaskListAction(
         Request $request,
-        GetTasksHandler $getTasksHandler,
+        GetTaskListHandler $getTaskListHandler,
         #[CurrentUser] ?User $user,
         #[MapQueryString] TaskListGet $query,
     ): JsonResponse {
         try {
 
             if (!$user) {
-                throw new \Exception('No user found.', Response::HTTP_FORBIDDEN);
+                throw new \Exception('No user found.', Response::HTTP_UNAUTHORIZED);
             }
 
-            $tasks = $getTasksHandler->getTasks($user, $query);
+            $tasks = $getTaskListHandler->getTasks($user, $query);
 
             return $this->json($tasks, Response::HTTP_OK, [], ['groups' => ['task:list']]);
         } catch (\Exception $e) {
+            return $this->prepareError(
+                'Error on fetching tasks list.',
+                $e,
+                $user,
+                [
+                    'query' => $query
+                ]
+            );
+        }
+    }
 
-            $this->logger->error('Error on fetching tasks.', [
-                'user' => $user ? $user->getUserkey() : '',
-                'query' => $query,
-                $e
-            ]);
+    #[Route('/{id}', name: 'get_task', methods: ['GET'])]
+    public function getTask(
+        int $id,
+        #[CurrentUser] ?User $user,
+        GetTaskHandler $getTaskHandler
+    ): JsonResponse {
 
-            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        try {
 
-            if ($e instanceof HttpExceptionInterface) {
-                $statusCode = $e->getStatusCode();
+            if (!$user) {
+                throw new \Exception('No user found.', Response::HTTP_UNAUTHORIZED);
             }
 
-            return $this->json([
-                'error' => $e->getMessage()
-            ], $statusCode);
+            $task = $getTaskHandler->getTaskById($id, $user);
+            return $this->json($task, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->prepareError('Error on fetching task.', $e, $user, ['id' => $id]);
         }
+    }
+
+    protected function prepareError(string $message, \Exception $exception, User $user, array $context): JsonResponse
+    {
+        $context['user'] = $user ?  $user->getUserkey() : '';
+        $context[] = $exception;
+
+        $this->logger->error($message, $context);
+
+        $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        if ($exception instanceof HttpExceptionInterface) {
+            $statusCode = $exception->getStatusCode();
+        }
+
+        return $this->json([
+            'error' => $exception->getMessage()
+        ], $statusCode);
     }
 }

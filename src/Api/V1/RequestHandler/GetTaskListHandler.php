@@ -8,7 +8,7 @@ use App\Api\V1\RequestPayload\TaskListGet;
 use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\User\Entity\User;
 
-readonly class GetTasksHandler
+readonly class GetTaskListHandler
 {
     public function __construct(
         private TaskRepository $taskRepository,
