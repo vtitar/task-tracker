@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
@@ -17,6 +18,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Api\V1\RequestHandler\GetTaskListHandler;
 use App\Api\V1\RequestPayload\TaskListGet;
 use App\Api\V1\RequestHandler\GetTaskHandler;
+use App\Api\V1\RequestHandler\CreateTaskHandler;
+use App\Api\V1\RequestPayload\TaskCreatePayload;
 
 
 #[Route('/task', name: 'task_')]
@@ -36,9 +39,7 @@ final class TaskController extends AbstractController
     ): JsonResponse {
         try {
 
-            if (!$user) {
-                throw new \Exception('No user found.', Response::HTTP_UNAUTHORIZED);
-            }
+            $this->validateUser($user);
 
             $tasks = $getTaskListHandler->getTasks($user, $query);
 
@@ -56,7 +57,7 @@ final class TaskController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get_task', methods: ['GET'])]
-    public function getTask(
+    public function getTaskAction(
         int $id,
         #[CurrentUser] ?User $user,
         GetTaskHandler $getTaskHandler
@@ -64,14 +65,38 @@ final class TaskController extends AbstractController
 
         try {
 
-            if (!$user) {
-                throw new \Exception('No user found.', Response::HTTP_UNAUTHORIZED);
-            }
+            $this->validateUser($user);
 
-            $task = $getTaskHandler->getTaskById($id, $user);
-            return $this->json($task, Response::HTTP_OK);
+            $taskData = $getTaskHandler->getTaskDataById($id, $user);
+            return $this->json($taskData, Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->prepareError('Error on fetching task.', $e, $user, ['id' => $id]);
+        }
+    }
+
+    #[Route('/create', name: 'create', methods: ['POST'])]
+    public function createTaskAction(
+        Request $request,
+        #[CurrentUser] ?User $user,
+        CreateTaskHandler $createTaskHandler,
+        #[MapRequestPayload] TaskCreatePayload $payload
+    ): JsonResponse {
+        try {
+
+            $this->validateUser($user);
+
+            $taskData = $createTaskHandler->handle($payload, $user);
+            return $this->json($taskData, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->prepareError('Error on task creation.', $e, $user, ['payload' => $payload]);
+        }
+    }
+
+    //TODO: move to separate own validator
+    protected function validateUser(User $user): void
+    {
+        if (!$user) {
+            throw new \Exception('No user found.', Response::HTTP_UNAUTHORIZED);
         }
     }
 

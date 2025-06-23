@@ -55,4 +55,10 @@ class TaskRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function save(Task $task): void
+    {
+        $this->getEntityManager()->persist($task);
+        $this->getEntityManager()->flush();
+    }
 }

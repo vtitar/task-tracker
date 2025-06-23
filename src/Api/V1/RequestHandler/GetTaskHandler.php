@@ -8,14 +8,16 @@ use App\Domain\Task\Entity\Task;
 use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\User\Entity\User;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Domain\Task\Service\TaskTreeBuilder\TaskTreeBuilderInterface;
 
 readonly class GetTaskHandler
 {
     public function __construct(
         private TaskRepository $taskRepository,
+        private TaskTreeBuilderInterface $taskTreeBuilder,
     ) {}
 
-    public function getTaskById(int $id, User $user): array
+    public function getTaskDataById(int $id, User $user): array
     {
         $task = $this->taskRepository->findOneBy([
             'id' => $id,
@@ -26,26 +28,7 @@ readonly class GetTaskHandler
             throw new NotFoundHttpException('Task not found.');
         }
 
-        return $this->buildTaskTree($task);
+        return $this->taskTreeBuilder->build([$task]);
     }
 
-    protected function buildTaskTree(Task $task): array
-    {
-        $tree = [
-            'id' => $task->getId(),
-            'title' => $task->getTitle(),
-            'description' => $task->getDescription(),
-            'status' => $task->getStatus(),
-            'priority' => $task->getPriority(),
-            'createdAt' => $task->getCreatedAt()->format('Y-m-d H:i:s'),
-            'completedAt' => $task->getCompletedAt() ? $task->getCompletedAt()->format('Y-m-d H:i:s') : null,
-            'subtasks' => [],
-        ];
-
-        foreach ($task->getSubtasks() as $subtask) {
-            $tree['subtasks'][] = $this->buildTaskTree($subtask);
-        }
-
-        return $tree;
-    }
 }
