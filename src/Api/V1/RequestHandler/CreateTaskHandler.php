@@ -26,7 +26,7 @@ readonly class CreateTaskHandler
         return $this->taskTreeBuilder->build([$task]);
     }
 
-    public function createTask(TaskCreatePayload $payload, User $user): Task
+    protected function createTask(TaskCreatePayload $payload, User $user): Task
     {
         $task = $this->taskBuilder
             ->setTitle($payload->title)

@@ -20,6 +20,8 @@ use App\Api\V1\RequestPayload\TaskListGet;
 use App\Api\V1\RequestHandler\GetTaskHandler;
 use App\Api\V1\RequestHandler\CreateTaskHandler;
 use App\Api\V1\RequestPayload\TaskCreatePayload;
+use App\Api\V1\RequestHandler\UpdateTaskHandler;
+use App\Api\V1\RequestPayload\TaskUpdatePayload;
 
 
 #[Route('/task', name: 'task_')]
@@ -89,6 +91,25 @@ final class TaskController extends AbstractController
             return $this->json($taskData, Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->prepareError('Error on task creation.', $e, $user, ['payload' => $payload]);
+        }
+    }
+
+    #[Route('/{id}', name: 'task_update', methods: ['PUT'])]
+    public function updateTaskAction(
+        Request $request,
+        int $id,
+        #[CurrentUser] ?User $user,
+        UpdateTaskHandler $updateTaskHandler,
+        #[MapRequestPayload] TaskUpdatePayload $payload
+    ): JsonResponse {
+        try {
+
+            $this->validateUser($user);
+
+            $taskData = $updateTaskHandler->handle($id, $payload, $user);
+            return $this->json($taskData, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->prepareError('Error updating task.', $e, $user, ['payload' => $payload]);
         }
     }
 
