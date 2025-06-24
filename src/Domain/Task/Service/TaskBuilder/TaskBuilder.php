@@ -7,14 +7,16 @@ namespace App\Domain\Task\Service\TaskBuilder;
 use App\Domain\Task\Entity\Task;
 use App\Domain\Task\Enum\TaskPriority;
 use App\Domain\Task\Enum\TaskStatus;
+use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\User\Entity\User;
 
 class TaskBuilder implements TaskBuilderInterface
 {
     private Task $task;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly TaskRepository $taskRepository
+    ) {
         $this->task = new Task();
         $this->task->setCreatedAt(new \DateTimeImmutable());
     }
@@ -49,12 +51,6 @@ class TaskBuilder implements TaskBuilderInterface
         return $this;
     }
 
-    public function setParent(?Task $parent): self
-    {
-        $this->task->setParent($parent);
-        return $this;
-    }
-
     public function setCompletedAt(?string $completedAt): self
     {
         if (!$completedAt) {
@@ -83,6 +79,10 @@ class TaskBuilder implements TaskBuilderInterface
 
         if (!$parentTask) {
             throw new \Exception('Invalid parent task.');
+        }
+
+        if ($parentTask->getStatus() === TaskStatus::DONE) {
+            throw new \Exception('Parent task already completed.');
         }
 
         $this->task->setParent($parentTask);

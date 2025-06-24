@@ -16,7 +16,6 @@ interface TaskBuilderInterface
     public function setPriority(int $priority): self;
     public function setStatus(string $status): self;
     public function setCompletedAt(?string $completedAt): self;
-    public function setParent(?Task $parent): self;
     public function setParentId(?int $parentId): self;
 
     public function build(): Task;
