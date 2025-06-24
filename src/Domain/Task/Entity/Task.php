@@ -199,4 +199,19 @@ class Task
 
         return $this;
     }
+
+    public function canBeDeleted(): bool
+    {
+        if ($this->getStatus() === TaskStatus::DONE) {
+            return false;
+        }
+
+        foreach ($this->getSubtasks() as $subtask) {
+            if (!$subtask->canBeDeleted()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

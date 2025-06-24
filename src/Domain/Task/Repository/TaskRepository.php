@@ -6,6 +6,7 @@ namespace App\Domain\Task\Repository;
 
 use App\Api\V1\RequestPayload\TaskListGet;
 use App\Domain\Task\Entity\Task;
+use App\Domain\Task\Enum\TaskStatus;
 use App\Domain\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -59,6 +60,30 @@ class TaskRepository extends ServiceEntityRepository
     public function save(Task $task): void
     {
         $this->getEntityManager()->persist($task);
+        $this->getEntityManager()->flush();
+    }
+
+    public function findUserTask(int $id, User $user): Task
+    {
+        $task = $this->findOneBy([
+            'id' => $id,
+            'user' => $user
+        ]);
+
+        if (!$task) {
+            throw new \Exception('Task not found.');
+        }
+
+        return $task;
+    }
+
+    public function remove(Task $task): void
+    {
+        if (!$task->canBeDeleted()) {
+            throw new \Exception('Task cant be deleted.');
+        }
+
+        $this->getEntityManager()->remove($task);
         $this->getEntityManager()->flush();
     }
 }
