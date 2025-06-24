@@ -43,7 +43,7 @@ final class TaskController extends AbstractController
     ): JsonResponse {
         try {
 
-            $this->validateUser($user);
+            $getTaskListHandler->validateUser($user);
 
             $tasks = $getTaskListHandler->getTasks($user, $query);
 
@@ -69,7 +69,7 @@ final class TaskController extends AbstractController
 
         try {
 
-            $this->validateUser($user);
+            $getTaskHandler->validateUser($user);
 
             $taskData = $getTaskHandler->getTaskDataById($id, $user);
             return $this->json($taskData, Response::HTTP_OK);
@@ -87,7 +87,7 @@ final class TaskController extends AbstractController
     ): JsonResponse {
         try {
 
-            $this->validateUser($user);
+            $createTaskHandler->validateUser($user);
 
             $taskData = $createTaskHandler->handle($payload, $user);
             return $this->json($taskData, Response::HTTP_OK);
@@ -106,7 +106,7 @@ final class TaskController extends AbstractController
     ): JsonResponse {
         try {
 
-            $this->validateUser($user);
+            $updateTaskHandler->validateUser($user);
 
             $taskData = $updateTaskHandler->handle($id, $payload, $user);
             return $this->json($taskData, Response::HTTP_OK);
@@ -127,7 +127,7 @@ final class TaskController extends AbstractController
     ): JsonResponse {
         try {
 
-            $this->validateUser($user);
+            $deleteTaskHandler->validateUser($user);
 
             $deleteTaskHandler->handle($id, $user);
             return $this->json([], Response::HTTP_OK);
@@ -145,20 +145,12 @@ final class TaskController extends AbstractController
     ): JsonResponse {
         try {
 
-            $this->validateUser($user);
+            $completeTaskHandler->validateUser($user);
 
             $taskData = $completeTaskHandler->handle($id, $user);
             return $this->json($taskData, Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->prepareError('Error deleting task.', $e, $user, ['id' => $id]);
-        }
-    }
-
-    //TODO: move to separate own validator
-    protected function validateUser(User $user): void
-    {
-        if (!$user) {
-            throw new \Exception('No user found.', Response::HTTP_UNAUTHORIZED);
         }
     }
 

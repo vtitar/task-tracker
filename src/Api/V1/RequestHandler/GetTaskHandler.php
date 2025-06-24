@@ -8,7 +8,7 @@ use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\User\Entity\User;
 use App\Domain\Task\Service\TaskTreeBuilder\TaskTreeBuilderInterface;
 
-readonly class GetTaskHandler
+readonly class GetTaskHandler extends AbstractTaskHandler
 {
     public function __construct(
         private TaskRepository $taskRepository,

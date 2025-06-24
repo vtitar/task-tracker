@@ -11,7 +11,7 @@ use App\Domain\Task\Service\TaskTreeBuilder\TaskTreeBuilderInterface;
 use App\Domain\User\Entity\User;
 use App\Api\V1\RequestPayload\TaskCreatePayload;
 
-readonly class CreateTaskHandler
+readonly class CreateTaskHandler extends AbstractTaskHandler
 {
     public function __construct(
         private TaskRepository $taskRepository,

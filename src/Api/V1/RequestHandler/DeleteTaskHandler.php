@@ -7,7 +7,7 @@ namespace App\Api\V1\RequestHandler;
 use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\User\Entity\User;
 
-readonly class DeleteTaskHandler
+readonly class DeleteTaskHandler extends AbstractTaskHandler
 {
     public function __construct(
         private TaskRepository $taskRepository,

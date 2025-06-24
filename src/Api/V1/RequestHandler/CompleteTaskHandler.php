@@ -10,7 +10,7 @@ use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\Task\Service\TaskTreeBuilder\TaskTreeBuilderInterface;
 use App\Domain\User\Entity\User;
 
-readonly class CompleteTaskHandler
+readonly class CompleteTaskHandler extends AbstractTaskHandler
 {
     public function __construct(
         private TaskRepository $taskRepository,
