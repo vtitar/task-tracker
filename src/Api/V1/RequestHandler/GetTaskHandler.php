@@ -19,14 +19,7 @@ readonly class GetTaskHandler
 
     public function getTaskDataById(int $id, User $user): array
     {
-        $task = $this->taskRepository->findOneBy([
-            'id' => $id,
-            'user' => $user
-        ]);
-
-        if (!$task) {
-            throw new NotFoundHttpException('Task not found.');
-        }
+        $task = $this->taskRepository->findUserTask($id, $user);
 
         return $this->taskTreeBuilder->build([$task]);
     }

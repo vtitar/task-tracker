@@ -10,7 +10,6 @@ use App\Domain\Task\Repository\TaskRepository;
 use App\Domain\Task\Service\TaskTreeBuilder\TaskTreeBuilderInterface;
 use App\Domain\User\Entity\User;
 use App\Api\V1\RequestPayload\TaskUpdatePayload;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 readonly class UpdateTaskHandler
 {
@@ -21,25 +20,11 @@ readonly class UpdateTaskHandler
 
     public function handle(int $id, TaskUpdatePayload $payload, User $user): array
     {
-        $task = $this->getTask($id, $user);
+        $task = $this->taskRepository->findUserTask($id, $user);
 
         $this->updateTask($task, $payload);
 
         return $this->taskTreeBuilder->build([$task]);
-    }
-
-    protected function getTask(int $id, User $user): Task
-    {
-        $task = $this->taskRepository->findOneBy([
-            'id' => $id,
-            'user' => $user
-        ]);
-
-        if (!$task) {
-            throw new NotFoundHttpException('Task not found.');
-        }
-
-        return $task;
     }
 
     protected function updateTask(Task $task, TaskUpdatePayload $payload): void
