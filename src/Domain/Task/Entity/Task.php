@@ -214,4 +214,15 @@ class Task
 
         return true;
     }
+
+    public function areAllSubtasksCompleted(): bool
+    {
+        foreach ($this->getSubtasks() as $subtask) {
+            if ($subtask->getStatus() !== TaskStatus::DONE || !$subtask->areAllSubtasksCompleted()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

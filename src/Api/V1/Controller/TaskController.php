@@ -23,6 +23,7 @@ use App\Api\V1\RequestPayload\TaskCreatePayload;
 use App\Api\V1\RequestHandler\UpdateTaskHandler;
 use App\Api\V1\RequestPayload\TaskUpdatePayload;
 use App\Api\V1\RequestHandler\DeleteTaskHandler;
+use App\Api\V1\RequestHandler\CompleteTaskHandler;
 
 
 #[Route('/task', name: 'task_')]
@@ -130,6 +131,24 @@ final class TaskController extends AbstractController
 
             $deleteTaskHandler->handle($id, $user);
             return $this->json([], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->prepareError('Error deleting task.', $e, $user, ['id' => $id]);
+        }
+    }
+
+    #[Route('/{id}/complete', name: 'task_complete', methods: ['POST'])]
+    public function completeTaskAction(
+        Request $request,
+        int $id,
+        #[CurrentUser] ?User $user,
+        CompleteTaskHandler $completeTaskHandler,
+    ): JsonResponse {
+        try {
+
+            $this->validateUser($user);
+
+            $taskData = $completeTaskHandler->handle($id, $user);
+            return $this->json($taskData, Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->prepareError('Error deleting task.', $e, $user, ['id' => $id]);
         }
