@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Task\Service\TaskTreeBuilder;
 
+use App\Domain\Task\DTO\TaskNode;
 use App\Domain\Task\Entity\Task;
 
 class TaskTreeBuilder implements TaskTreeBuilderInterface
 {
     /**
      * @param Task[] $tasks
-     * @return array
+     * @return TaskNode[]
      */
     public function build(array $tasks): array
     {
@@ -23,7 +24,7 @@ class TaskTreeBuilder implements TaskTreeBuilderInterface
         return $result;
     }
 
-    private function buildNode(Task $task): array
+    private function buildNode(Task $task): TaskNode
     {
         $children = [];
 
@@ -31,15 +32,16 @@ class TaskTreeBuilder implements TaskTreeBuilderInterface
             $children[] = $this->buildNode($subtask);
         }
 
-        return [
-            'id' => $task->getId(),
-            'title' => $task->getTitle(),
-            'description' => $task->getDescription(),
-            'priority' => $task->getPriority(),
-            'status' => $task->getStatus(),
-            'completedAt' => $task->getCompletedAt()?->format('Y-m-d H:i:s'),
-            'createdAt' => $task->getCreatedAt()->format('Y-m-d H:i:s'),
-            'subtasks' => $children,
-        ];
+        return new TaskNode(
+            $task->getId(),
+            $task->getParent() ? $task->getParent()->getId() : 0,
+            $task->getTitle(),
+            $task->getDescription(),
+            $task->getPriority()->value,
+            $task->getStatus()->value,
+            $task->getCompletedAt() ? $task->getCompletedAt()->format('Y-m-d H:i:s') : '',
+            $task->getCreatedAt()->format('Y-m-d H:i:s'),
+            $children
+        );
     }
 }

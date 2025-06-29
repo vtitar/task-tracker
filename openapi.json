@@ -1,0 +1,372 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TaskTracker",
+        "description": "This is an awesome test app!",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/login_jwt": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get JWT token",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "userkey": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "JWT token response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/task/list": {
+            "get": {
+                "operationId": "get_api_v1_task_list",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "",
+                            "enum": [
+                                "done",
+                                "todo",
+                                ""
+                            ]
+                        }
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "enum": [
+                                1,
+                                2,
+                                3,
+                                4,
+                                5,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort[]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "title": "Sort fields and directions, e.g. ['priority' => 'desc', 'createdAt' => 'asc']",
+                            "type": "array",
+                            "items": {},
+                            "default": {
+                                "priority": "desc",
+                                "createdAt": "asc",
+                                "completedAt": "desc"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/task/{id}": {
+            "get": {
+                "operationId": "get_api_v1_task_get_task",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "put_api_v1_task_task_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaskUpdatePayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "delete_api_v1_task_task_delete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/task/create": {
+            "post": {
+                "operationId": "post_api_v1_task_create",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaskCreatePayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/task/{id}/complete": {
+            "post": {
+                "operationId": "post_api_v1_task_task_complete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TaskListGet": {
+                "properties": {
+                    "page": {
+                        "type": "integer",
+                        "default": 1
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "default": 10
+                    },
+                    "search": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "status": {
+                        "type": "string",
+                        "default": "",
+                        "enum": [
+                            "done",
+                            "todo",
+                            ""
+                        ]
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "default": 0,
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            0
+                        ]
+                    },
+                    "sort": {
+                        "title": "Sort fields and directions, e.g. ['priority' => 'desc', 'createdAt' => 'asc']",
+                        "type": "array",
+                        "items": {},
+                        "default": {
+                            "priority": "desc",
+                            "createdAt": "asc",
+                            "completedAt": "desc"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "TaskCreatePayload": {
+                "required": [
+                    "title"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "default": 3,
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "default": "todo",
+                        "enum": [
+                            "todo",
+                            "done"
+                        ]
+                    },
+                    "parentId": {
+                        "type": "integer",
+                        "default": null,
+                        "nullable": true
+                    },
+                    "completedAt": {
+                        "type": "string",
+                        "default": null,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "TaskUpdatePayload": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "default": null,
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "default": null,
+                        "nullable": true
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "default": null,
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        }
+    ]
+}

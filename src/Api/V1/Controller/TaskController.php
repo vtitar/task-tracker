@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\V1\Controller;
 
+use OpenApi\Attributes as OA;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,9 +25,14 @@ use App\Api\V1\RequestHandler\UpdateTaskHandler;
 use App\Api\V1\RequestPayload\TaskUpdatePayload;
 use App\Api\V1\RequestHandler\DeleteTaskHandler;
 use App\Api\V1\RequestHandler\CompleteTaskHandler;
+use App\Domain\Task\DTO\TaskNode;
+use Nelmio\ApiDocBundle\Attribute\Model;
+
+
 
 
 #[Route('/task', name: 'task_')]
+
 final class TaskController extends AbstractController
 {
     public function __construct(
@@ -35,6 +41,16 @@ final class TaskController extends AbstractController
     {}
 
     #[Route('/list', name: 'list', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns list of tasks',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(
+                ref: new Model(type: TaskNode::class/*, groups: ['list']*/) //TODO: investigate why this is not working
+            )
+        )
+    )]
     public function getTaskListAction(
         Request $request,
         GetTaskListHandler $getTaskListHandler,
@@ -47,7 +63,7 @@ final class TaskController extends AbstractController
 
             $tasks = $getTaskListHandler->getTasks($user, $query);
 
-            return $this->json($tasks, Response::HTTP_OK, [], ['groups' => ['task:list']]);
+            return $this->json($tasks, Response::HTTP_OK, [], ['groups' => ['list']]);
         } catch (\Exception $e) {
             return $this->prepareError(
                 'Error on fetching tasks list.',
@@ -61,6 +77,13 @@ final class TaskController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get_task', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns task details',
+        content: new OA\JsonContent(
+            ref: new Model(type: TaskNode::class/*, groups: ['detail']*/) // TODO: investigate why this is not working
+        )
+    )]
     public function getTaskAction(
         int $id,
         #[CurrentUser] ?User $user,
@@ -68,17 +91,23 @@ final class TaskController extends AbstractController
     ): JsonResponse {
 
         try {
-
             $getTaskHandler->validateUser($user);
 
             $taskData = $getTaskHandler->getTaskDataById($id, $user);
-            return $this->json($taskData, Response::HTTP_OK);
+            return $this->json($taskData, Response::HTTP_OK, [], ['groups' => ['detail']]);
         } catch (\Exception $e) {
             return $this->prepareError('Error on fetching task.', $e, $user, ['id' => $id]);
         }
     }
 
     #[Route('/create', name: 'create', methods: ['POST'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Create task',
+        content: new OA\JsonContent(
+            ref: new Model(type: TaskNode::class)
+        )
+    )]
     public function createTaskAction(
         Request $request,
         #[CurrentUser] ?User $user,
@@ -90,13 +119,20 @@ final class TaskController extends AbstractController
             $createTaskHandler->validateUser($user);
 
             $taskData = $createTaskHandler->handle($payload, $user);
-            return $this->json($taskData, Response::HTTP_OK);
+            return $this->json($taskData, Response::HTTP_OK, [], ['groups' => ['detail']]);
         } catch (\Exception $e) {
             return $this->prepareError('Error on task creation.', $e, $user, ['payload' => $payload]);
         }
     }
 
     #[Route('/{id}', name: 'task_update', methods: ['PUT'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Update task',
+        content: new OA\JsonContent(
+            ref: new Model(type: TaskNode::class)
+        )
+    )]
     public function updateTaskAction(
         Request $request,
         int $id,
@@ -109,7 +145,7 @@ final class TaskController extends AbstractController
             $updateTaskHandler->validateUser($user);
 
             $taskData = $updateTaskHandler->handle($id, $payload, $user);
-            return $this->json($taskData, Response::HTTP_OK);
+            return $this->json($taskData, Response::HTTP_OK, [], ['groups' => ['detail']]);
         } catch (\Exception $e) {
             return $this->prepareError('Error updating task.', $e, $user, [
                 'payload' => $payload,
@@ -119,6 +155,13 @@ final class TaskController extends AbstractController
     }
 
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Delete task',
+        content: new OA\JsonContent(
+
+        )
+    )]
     public function deleteTaskAction(
         Request $request,
         int $id,
@@ -137,6 +180,13 @@ final class TaskController extends AbstractController
     }
 
     #[Route('/{id}/complete', name: 'task_complete', methods: ['POST'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Update task',
+        content: new OA\JsonContent(
+            ref: new Model(type: TaskNode::class)
+        )
+    )]
     public function completeTaskAction(
         Request $request,
         int $id,
@@ -148,7 +198,7 @@ final class TaskController extends AbstractController
             $completeTaskHandler->validateUser($user);
 
             $taskData = $completeTaskHandler->handle($id, $user);
-            return $this->json($taskData, Response::HTTP_OK);
+            return $this->json($taskData, Response::HTTP_OK, [], ['groups' => ['detail']]);
         } catch (\Exception $e) {
             return $this->prepareError('Error deleting task.', $e, $user, ['id' => $id]);
         }
