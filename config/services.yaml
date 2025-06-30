@@ -16,5 +16,10 @@ services:
     App\:
         resource: '../src/'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    task.subscriber.search:
+        class: \App\Domain\Task\EventSubscriber\TaskSearchSubscriber
+        tags: [ { name: kernel.event_subscriber } ]
+
+    task.subscriber.lifecycle:
+        class: \App\Domain\Task\EventSubscriber\TaskLifecycleSubscriber
+        tags: [ { name: kernel.event_subscriber } ]

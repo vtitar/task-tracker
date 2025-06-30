@@ -6,18 +6,25 @@ namespace App\Domain\Task\Repository;
 
 use App\Api\V1\RequestPayload\TaskListGet;
 use App\Domain\Task\Entity\Task;
-use App\Domain\Task\Enum\TaskStatus;
 use App\Domain\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use App\Domain\Task\Event\TaskFilterQueryBuildEvent;
+use Doctrine\ORM\UnitOfWork;
+use App\Domain\Task\Event\TaskCreatedEvent;
+use App\Domain\Task\Event\TaskUpdatedEvent;
+use App\Domain\Task\Event\TaskDeletedEvent;
 
 /**
  * @extends ServiceEntityRepository<Task>
  */
 class TaskRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly EventDispatcherInterface $eventDispatcher
+    ) {
         parent::__construct($registry, Task::class);
     }
 
@@ -39,11 +46,7 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('priority', $query->priority);
         }
 
-        //TODO: replace with search index
-        if ($query->search !== '') {
-            $qb->andWhere('t.title LIKE :search OR t.description LIKE :search')
-                ->setParameter('search', '%' . $query->search . '%');
-        }
+        $this->eventDispatcher->dispatch(new TaskFilterQueryBuildEvent($qb, $user, $query));
 
         foreach ($query->sort as $field => $direction) {
             $qb->addOrderBy('t.' . $field, strtoupper($direction));
@@ -59,8 +62,19 @@ class TaskRepository extends ServiceEntityRepository
 
     public function save(Task $task): void
     {
-        $this->getEntityManager()->persist($task);
-        $this->getEntityManager()->flush();
+        $em = $this->getEntityManager();
+        $uow = $em->getUnitOfWork();
+
+        $isNew = $uow->getEntityState($task) === UnitOfWork::STATE_NEW;
+
+        $em->persist($task);
+        $em->flush();
+
+        if ($isNew) {
+            $this->eventDispatcher->dispatch(new TaskCreatedEvent($task));
+        } else {
+            $this->eventDispatcher->dispatch(new TaskUpdatedEvent($task));
+        }
     }
 
     public function findUserTask(int $id, User $user): Task
@@ -85,5 +99,7 @@ class TaskRepository extends ServiceEntityRepository
 
         $this->getEntityManager()->remove($task);
         $this->getEntityManager()->flush();
+
+        $this->eventDispatcher->dispatch(new TaskDeletedEvent($task));
     }
 }
