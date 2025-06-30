@@ -114,6 +114,7 @@ currently `/api/v1/task/list` response is not correct
  - replace message bus with RabbitMQ
  - Add Elasticsearch for improved search capabilities
  - Add automated tests 
+ - Add separate reindex command that could be executed via cron
  - Improve pagination and sorting options in API endpoints
  - Optimize Docker setup for production (multi-stage builds, environment separation)
  - Add monitoring and logging for message processing failures
