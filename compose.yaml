@@ -29,5 +29,21 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+  messenger_worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    depends_on:
+      - db
+    volumes:
+      - .:/var/www/html
+      - ./.env:/var/www/html/.env
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: mysql://app:app@db:3306/app
+      MESSENGER_TRANSPORT_DSN: doctrine://default
+    command: php bin/console messenger:consume async --time-limit=3600 --memory-limit=128M -vv
+
 volumes:
   db_data:
