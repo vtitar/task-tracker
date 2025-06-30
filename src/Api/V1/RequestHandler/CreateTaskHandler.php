@@ -14,9 +14,9 @@ use App\Api\V1\RequestPayload\TaskCreatePayload;
 readonly class CreateTaskHandler extends AbstractTaskHandler
 {
     public function __construct(
-        private TaskRepository $taskRepository,
-        private TaskTreeBuilderInterface $taskTreeBuilder,
-        private TaskBuilderInterface $taskBuilder
+        private readonly TaskRepository $taskRepository,
+        private readonly TaskTreeBuilderInterface $taskTreeBuilder,
+        private readonly TaskBuilderInterface $taskBuilder
     ) {}
 
     public function handle(TaskCreatePayload $payload, User $user): array
