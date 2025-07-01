@@ -1,0 +1,34 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: TaskTracker
+            description: This is an awesome test app!
+            version: 1.0.0
+        paths:
+            /api/v1/login_jwt:
+                post:
+                    tags: [ 'Auth' ]
+                    summary: 'Get JWT token'
+                    requestBody:
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        userkey:
+                                            type: string
+                                        password:
+                                            type: string
+                    responses:
+                        '200':
+                            description: 'JWT token response'
+                            content:
+                                application/json:
+                                    schema:
+                                        type: object
+                                        properties:
+                                            token:
+                                                type: string
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
